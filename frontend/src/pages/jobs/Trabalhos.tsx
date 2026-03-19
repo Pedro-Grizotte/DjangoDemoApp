@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { Usuario } from '@/types';
-import { rangeDeSalarios, niveisDeEducacao } from '@/mocks/empregos';
+import { TrabalhosMock, rangeDeSalarios, niveisDeEducacao } from '@/mocks/empregos';
 import ConteudoPagina from '@/components/layout/ConteudoPagina';
+import CardTrabalho from './CardTrabalho';
+import EstadoVazio from '@/components/ui/EstadoVazio';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search } from 'lucide-react';
+import { Search, Briefcase } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface TrabalhosPropriedades {
   user: Usuario | null;
@@ -15,6 +18,23 @@ export default function Trabalhos({ user }: TrabalhosPropriedades) {
   const [busca, setBusca] = useState('');
   const [filtroSalario, setFiltroSalario] = useState('all');
   const [filtroEducacao, setFiltroEducacao] = useState('all');
+  const [aplicacaoId, setAplicacaoId] = useState<number[]>([]);
+
+  const filtros = useMemo(() => {
+    return TrabalhosMock.filter(emprego => {
+      const matchBusca = emprego.titulo.toLowerCase().includes(busca.toLowerCase())
+       || emprego.requisitos.toLowerCase().includes(busca.toLowerCase());
+      const matchSalario = filtroSalario === 'all' || emprego.salario_range === filtroSalario;
+      const matchEducacao = filtroEducacao === 'all' || emprego.educacao_minima === filtroEducacao;
+      return matchBusca && matchSalario && matchEducacao;
+    });
+  }, [busca, filtroSalario, filtroEducacao]);
+
+  const enviarApply = (trabalhoId: number) => {
+    if (aplicacaoId.includes(trabalhoId)) return;
+    setAplicacaoId(prev => [...prev, trabalhoId]);
+    toast.success('Candidatura enviada com sucesso!');
+  };
 
   return (
     <ConteudoPagina>
@@ -55,6 +75,22 @@ export default function Trabalhos({ user }: TrabalhosPropriedades) {
           </SelectContent>
         </Select>
       </div>
+
+      {filtros.length === 0 ? (
+        <EstadoVazio icone={Briefcase} titulo="Nenhuma vaga encontrada" descricao="Tente ajustar os filtros de busca." />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtros.map(job => (
+            <CardTrabalho
+              key={job.id}
+              emprego={job}
+              showApply={user?.tipo === 'candidato'}
+              onApply={enviarApply}
+              appliedIds={aplicacaoId}
+            />
+          ))}
+        </div>
+      )}
     </ConteudoPagina>
   );
 }
