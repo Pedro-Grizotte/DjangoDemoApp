@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "./components/layout/Navbar";
 import Trabalhos from "./pages/jobs/Trabalhos";
+import Login from "./pages/auth/Login";
 
 const queryClient = new QueryClient();
 
@@ -14,6 +15,7 @@ function ConteudoAplicativo() {
       <Navbar usuario={usuario} onTrocaUsuario={trocarTipo} onLogout={logout} />
       <Routes>
         <Route path="/" element={<Trabalhos user={usuario} />} />
+        <Route path="/login" element={<Login onLogin={login} />} />
       </Routes>
     </>
   )

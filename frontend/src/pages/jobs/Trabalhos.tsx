@@ -84,9 +84,9 @@ export default function Trabalhos({ user }: TrabalhosPropriedades) {
             <CardTrabalho
               key={job.id}
               emprego={job}
-              showApply={user?.tipo === 'candidato'}
-              onApply={enviarApply}
-              appliedIds={aplicacaoId}
+              mostrarAplicado={user?.tipo === 'candidato'}
+              onAplicacao={enviarApply}
+              IdAplicacao={aplicacaoId}
             />
           ))}
         </div>
