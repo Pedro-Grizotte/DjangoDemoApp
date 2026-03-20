@@ -5,15 +5,15 @@ import { Button } from '@/components/ui/button';
 import { GraduationCap, DollarSign, Users, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-interface CardPropriedades {
+interface TrabalhoCardPropriedades {
   emprego: Trabalho;
   mostrarAplicado?: boolean;
   onAplicacao?: (jobId: number) => void;
   IdAplicacao?: number[];
 }
 
-export default function CardTrabalho({ emprego, mostrarAplicado, onAplicacao, IdAplicacao = [] }: CardPropriedades) {
-  const estadoAplicacao = IdAplicacao.includes(emprego.id);
+export default function JobCard({ emprego, mostrarAplicado, onAplicacao, IdAplicacao = [] }: TrabalhoCardPropriedades) {
+  const estaAplicado = IdAplicacao.includes(emprego.id);
 
   return (
     <Card className="group flex flex-col transition-shadow hover:shadow-lg">
@@ -38,14 +38,14 @@ export default function CardTrabalho({ emprego, mostrarAplicado, onAplicacao, Id
         </div>
       </CardConteudo>
       <CardFooter className="gap-2 pt-0">
-        <Link to={`/jobs/${emprego.id}`} className="flex-1">
+        <Link to={`/empregos/${emprego.id}`} className="flex-1">
           <Button variant="outline" size="sm" className="w-full gap-1">
             Detalhes <ChevronRight className="h-3.5 w-3.5" />
           </Button>
         </Link>
         {mostrarAplicado && (
-          <Button size="sm" disabled={estadoAplicacao} onClick={() => onAplicacao?.(emprego.id)} className="flex-1">
-            {estadoAplicacao ? 'Candidatado' : 'Candidatar-se'}
+          <Button size="sm" disabled={estaAplicado} onClick={() => onAplicacao?.(emprego.id)} className="flex-1">
+            {estaAplicado ? 'Candidatado' : 'Candidatar-se'}
           </Button>
         )}
       </CardFooter>

@@ -5,6 +5,7 @@ import Navbar from "./components/layout/Navbar";
 import Trabalhos from "./pages/jobs/Trabalhos";
 import Login from "./pages/auth/Login";
 import Registro from "./pages/auth/Registro";
+import CardTrabalhoDetalhes from "./pages/jobs/CardTrabalhoDetalhes";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,7 @@ function ConteudoAplicativo() {
         <Route path="/" element={<Trabalhos user={usuario} />} />
         <Route path="/login" element={<Login onLogin={login} />} />
         <Route path="/registro" element={<Registro />} />
+        <Route path="/empregos/:id" element={<CardTrabalhoDetalhes user={usuario} />} />
       </Routes>
     </>
   )

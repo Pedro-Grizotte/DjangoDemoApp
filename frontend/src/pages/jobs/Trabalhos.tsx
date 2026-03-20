@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import type { Usuario } from '@/types';
 import { TrabalhosMock, rangeDeSalarios, niveisDeEducacao } from '@/mocks/empregos';
 import ConteudoPagina from '@/components/layout/ConteudoPagina';
-import CardTrabalho from './CardTrabalho';
+import TrabalhoCard from '@/components/jobs/TrabalhoCard';
 import EstadoVazio from '@/components/ui/EstadoVazio';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -81,7 +81,7 @@ export default function Trabalhos({ user }: TrabalhosPropriedades) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtros.map(job => (
-            <CardTrabalho
+            <TrabalhoCard
               key={job.id}
               emprego={job}
               mostrarAplicado={user?.tipo === 'candidato'}
