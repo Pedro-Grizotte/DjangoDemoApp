@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Navbar from "./components/layout/Navbar";
 import Trabalhos from "./pages/jobs/Trabalhos";
 import Login from "./pages/auth/Login";
+import Registro from "./pages/auth/Registro";
 
 const queryClient = new QueryClient();
 
@@ -16,6 +17,7 @@ function ConteudoAplicativo() {
       <Routes>
         <Route path="/" element={<Trabalhos user={usuario} />} />
         <Route path="/login" element={<Login onLogin={login} />} />
+        <Route path="/registro" element={<Registro />} />
       </Routes>
     </>
   )
