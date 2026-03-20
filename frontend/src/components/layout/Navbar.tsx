@@ -34,8 +34,8 @@ export default function Navbar({ usuario, onTrocaUsuario, onLogout }: NavbarProp
           </Link>
           {usuario?.tipo === 'empresa' && (
             <>
-              <Link to="/empresa/empregos">
-                <Button variant={estaAtivo('/empresa/empregos') ? 'default' : 'ghost'} size="sm" className="gap-2">
+              <Link to="/empresa/trabalhos">
+                <Button variant={estaAtivo('/empresa/trabalhos') ? 'default' : 'ghost'} size="sm" className="gap-2">
                   <Building2 className="h-4 w-4" />
                   Minhas Vagas
                 </Button>
