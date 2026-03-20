@@ -10,6 +10,7 @@ import TrabalhosEmpresa from "./pages/empresa/TrabalhosEmpresa";
 import CriarEmpregos from "./pages/empresa/CriarEmpregos";
 import EditarEmpregos from "./pages/empresa/EditarEmpregos";
 import EmpresaCandidatos from "./pages/empresa/EmpresaCandidatos";
+import Relatorios from "./pages/reports/Relatorios";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ function ConteudoAplicativo() {
         <Route path="/empresa/trabalhos/novo" element={<CriarEmpregos />} />
         <Route path="/empresa/trabalhos/:id/editar" element={<EditarEmpregos />} />
         <Route path="/empresa/trabalhos/:id/candidatos" element={<EmpresaCandidatos />} />
+        <Route path="/relatorios" element={<Relatorios />} />
       </Routes>
     </>
   )
