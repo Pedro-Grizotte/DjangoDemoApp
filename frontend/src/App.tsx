@@ -1,5 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { TooltipProvider } from "./components/ui/tooltip";
+import { Toaster } from "./components/ui/toaster";
+import { Toaster as Sonner } from "./components/ui/sonner";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "./components/layout/Navbar";
 import Trabalhos from "./pages/jobs/Trabalhos";
@@ -39,9 +42,13 @@ function ConteudoAplicativo() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <ConteudoAplicativo />
-    </BrowserRouter>
+    <TooltipProvider>
+      <BrowserRouter>
+        <Toaster />
+        <Sonner />
+        <ConteudoAplicativo />
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
