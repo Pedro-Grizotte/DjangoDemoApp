@@ -9,6 +9,7 @@ import CardTrabalhoDetalhes from "./pages/jobs/CardTrabalhoDetalhes";
 import TrabalhosEmpresa from "./pages/empresa/TrabalhosEmpresa";
 import CriarEmpregos from "./pages/empresa/CriarEmpregos";
 import EditarEmpregos from "./pages/empresa/EditarEmpregos";
+import EmpresaCandidatos from "./pages/empresa/EmpresaCandidatos";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ function ConteudoAplicativo() {
         <Route path="/empresa/trabalhos" element={<TrabalhosEmpresa />} />
         <Route path="/empresa/trabalhos/novo" element={<CriarEmpregos />} />
         <Route path="/empresa/trabalhos/:id/editar" element={<EditarEmpregos />} />
+        <Route path="/empresa/trabalhos/:id/candidatos" element={<EmpresaCandidatos />} />
       </Routes>
     </>
   )
