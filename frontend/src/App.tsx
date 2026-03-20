@@ -6,6 +6,7 @@ import Trabalhos from "./pages/jobs/Trabalhos";
 import Login from "./pages/auth/Login";
 import Registro from "./pages/auth/Registro";
 import CardTrabalhoDetalhes from "./pages/jobs/CardTrabalhoDetalhes";
+import TrabalhosEmpresa from "./pages/empresa/TrabalhosEmpresa";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ function ConteudoAplicativo() {
         <Route path="/login" element={<Login onLogin={login} />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/empregos/:id" element={<CardTrabalhoDetalhes user={usuario} />} />
+        <Route path="/empresa/trabalhos" element={<TrabalhosEmpresa />} />
       </Routes>
     </>
   )
