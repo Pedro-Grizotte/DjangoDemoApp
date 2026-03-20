@@ -65,7 +65,7 @@ export default function EditarEmpregos() {
               <Textarea value={requisitos} onChange={e => setRequisitos(e.target.value)} required />
             </div>
             <div className="flex gap-3 justify-end">
-              <Button type="button" variant="outline" onClick={() => navigate('/company/jobs')}>Cancelar</Button>
+              <Button type="button" variant="outline" onClick={() => navigate('/empresa/trabalhos')}>Cancelar</Button>
               <Button type="submit">Salvar</Button>
             </div>
           </form>
