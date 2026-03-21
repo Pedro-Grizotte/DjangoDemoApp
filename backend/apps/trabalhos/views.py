@@ -3,9 +3,9 @@ from django.db.models.functions import TruncMonth
 from rest_framework import generics, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from contas.models import TipoUsuario
+from apps.contas.serializers import UsuarioRegistroSerializer
 from .models import Trabalho, Aplicacao
-from .serializers import TrabalhoSerializer, AplicacaoSerializer, UsuarioRegistroSerializer
+from .serializers import TrabalhoSerializer, AplicacaoSerializer
 from .permissoes import isDonoEmpresaDoTrabalho
 
 # Views relacionado aos Trabalhos
