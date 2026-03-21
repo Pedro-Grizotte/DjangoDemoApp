@@ -1,7 +1,7 @@
+from django.contrib.auth import authenticate
 from rest_framework import serializers
 
 from apps.contas.models import NivelEducacao, PerfilCandidatos, TipoUsuario, Usuario
-
 
 class CandidatoPerfilSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,6 +51,25 @@ class UsuarioRegistroSerializer(serializers.ModelSerializer):
         if user.tipo == TipoUsuario.CANDIDATO and candidato_perfil_data:
             PerfilCandidatos.objects.create(user=user, **candidato_perfil_data)
         return user
+    
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    senha = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        email = attrs.get("email")
+        senha = attrs.get("senha")
+        user = authenticate(
+            request=self.context.get("request"),
+            username=email,
+            password=senha,
+        )
+
+        if not user:
+            raise serializers.ValidationError({"detail": "Email ou senha invalidos."})
+        attrs["user"] = user 
+        return attrs
+
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
