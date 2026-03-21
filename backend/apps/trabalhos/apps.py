@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
-
 class TrabalhosConfig(AppConfig):
-    name = 'trabalhos'
+    name = 'apps.trabalhos'
+    label = 'trabalhos'

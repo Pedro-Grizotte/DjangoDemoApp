@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 # Models relacionado aos Trabalhos e Canditatura
 class RangeSalarios(models.TextChoices):
     ATE_1000 = "UP_TO_1000", "Até 1.000"
-    DE_1000_ATE_2000 = FROM_1000_TO_2000 = "FROM_1000_TO_2000", "De 1.000 a 2.000"
+    DE_1000_ATE_2000 = "FROM_1000_TO_2000", "De 1.000 a 2.000"
     DE_2000_ATE_3000 = "FROM_2000_TO_3000", "De 2.000 a 3.000"
     ACIMA_3000 = "ABOVE_3000", "Acima de 3.000"
 
@@ -14,7 +14,7 @@ class NivelEducacao(models.IntegerChoices):
     ENSINO_MEDIO = 2, "Ensino médio"
     TECNOLOGO = 3, "Tecnólogo"
     SUPERIOR = 4, "Ensino Superior"
-    POS-GRADUACAO = 5, "Pós / MBA / Mestrado"
+    POS_GRADUACAO = 5, "Pós / MBA / Mestrado"
     DOUTORADO = 6, "Doutorado"
 
 class Trabalho(models.Model):
@@ -26,7 +26,7 @@ class Trabalho(models.Model):
     nome = models.CharField(max_length=255)
     range_salario = models.CharField(max_length=30, choices=RangeSalarios.choices)
     requisitos = models.TextField()
-    educacao_minima = models.IntegerField(choices=NivelEducacao.choises)
+    educacao_minima = models.IntegerField(choices=NivelEducacao.choices)
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 
@@ -34,7 +34,7 @@ class Trabalho(models.Model):
         super().clean()
 
         if self.empresa and self.empresa.tipo != "EMPRESA":
-            raise ValidationError({"EMPRESA": "A vaga deve pertencer a um usuário do tipo empresa"})
+            raise ValidationError({"empresa": "A vaga deve pertencer a um usuário do tipo empresa"})
         if not self.nome or not self.nome.strip():
             raise ValidationError({"nome": "O nome da vaga é obrigatório."})
         if not self.requisitos or not self.requisitos.strip():
@@ -75,7 +75,9 @@ class Aplicacao(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_juntos = ("candidato", "trabalho")
+        constraints = [
+          models.UniqueConstraint(fields=["candidato", "trabalho"], name="unique_candidato_trabalho")
+        ]
 
     def clean(self):
         super().clean()
