@@ -19,11 +19,11 @@ import NaoEncontrado from "./pages/NaoEncontrado";
 const queryClient = new QueryClient();
 
 function ConteudoAplicativo() {
-  const { usuario, login, logout, trocarTipo } = useAuth();
+  const { usuario, login, logout } = useAuth();
 
   return (
     <>
-      <Navbar usuario={usuario} onTrocaUsuario={trocarTipo} onLogout={logout} />
+      <Navbar usuario={usuario} onLogout={logout} />
       <Routes>
         <Route path="/" element={<Trabalhos user={usuario} />} />
         <Route path="/login" element={<Login onLogin={login} />} />

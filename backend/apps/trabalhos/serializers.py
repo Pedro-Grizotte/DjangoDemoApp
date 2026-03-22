@@ -5,6 +5,7 @@ from .models import Aplicacao, Trabalho
 
 class TrabalhoSerializer(serializers.ModelSerializer):
     contagem_candidatos = serializers.IntegerField(read_only=True)
+    empresa_email = serializers.EmailField(source="empresa.email", read_only=True)
 
     class Meta:
         model = Trabalho
@@ -15,11 +16,12 @@ class TrabalhoSerializer(serializers.ModelSerializer):
             "requisitos",
             "educacao_minima",
             "empresa",
+            "empresa_email",
             "contagem_candidatos",
             "criado_em",
             "atualizado_em",
         ]
-        read_only_fields = ["empresa", "criado_em", "atualizado_em"]
+        read_only_fields = ["empresa", "empresa_email", "contagem_candidatos", "criado_em", "atualizado_em"]
 
     def validate_nome(self, valor):
         if not valor.strip():
@@ -32,8 +34,7 @@ class TrabalhoSerializer(serializers.ModelSerializer):
         return valor
 
     def create(self, validated_data):
-        request = self.context["request"]
-        user = request.user
+        user = self.context["request"].user
 
         if user.tipo != TipoUsuario.EMPRESA:
             raise serializers.ValidationError("Somente empresas podem criar vagas.")
@@ -45,7 +46,15 @@ class AplicacaoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Aplicacao
-        fields = ["id", "trabalho", "nome_trabalho", "candidato", "candidato_data", "score", "criado_em"]
+        fields = [
+            "id", 
+            "trabalho", 
+            "nome_trabalho", 
+            "candidato", 
+            "candidato_data", 
+            "score", 
+            "criado_em"
+        ]
         read_only_fields = ["candidato", "score", "criado_em"]
 
     def get_candidato_data(self, obj):
@@ -59,8 +68,7 @@ class AplicacaoSerializer(serializers.ModelSerializer):
         }
 
     def validate_trabalho(self, valor):
-        request = self.context["request"]
-        user = request.user
+        user = self.context["request"].user
 
         if user.tipo != TipoUsuario.CANDIDATO:
             raise serializers.ValidationError("Somente candidatos podem se candidatar.")
@@ -71,5 +79,4 @@ class AplicacaoSerializer(serializers.ModelSerializer):
         return valor
 
     def create(self, validated_data):
-        request = self.context["request"]
-        return Aplicacao.objects.create(candidato=request.user, **validated_data)
+        return Aplicacao.objects.create(candidato=self.context["request"].user, **validated_data)

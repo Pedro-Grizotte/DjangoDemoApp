@@ -1,16 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
-import type { Usuario, TipoUsuario } from '@/types';
-import { Briefcase, LogOut, ArrowRightLeft, BarChart3, Home, Building2, UserCircle } from 'lucide-react';
+import type { Usuario } from '@/types';
+import { Briefcase, LogOut, BarChart3, Home, Building2, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 interface NavbarPropriedades {
   usuario: Usuario | null;
-  onTrocaUsuario: (tipo: TipoUsuario) => void;
   onLogout: () => void;
 }
 
-export default function Navbar({ usuario, onTrocaUsuario, onLogout }: NavbarPropriedades) {
+export default function Navbar({ usuario, onLogout }: NavbarPropriedades) {
   const local = useLocation();
 
   const estaAtivo = (caminho: string) => local.pathname === caminho;
@@ -60,9 +59,6 @@ export default function Navbar({ usuario, onTrocaUsuario, onLogout }: NavbarProp
               <Badge variant={usuario.tipo === 'empresa' ? 'default' : 'secondary'} className="text-xs">
                 {usuario.tipo === 'empresa' ? 'Empresa' : 'Candidato'}
               </Badge>
-              <Button variant="ghost" size="sm" onClick={() => onTrocaUsuario(usuario.tipo === 'empresa' ? 'candidato' : 'empresa')} title="Alternar perfil">
-                <ArrowRightLeft className="h-4 w-4" />
-              </Button>
               <Button variant="ghost" size="sm" onClick={onLogout} title="Sair">
                 <LogOut className="h-4 w-4" />
               </Button>

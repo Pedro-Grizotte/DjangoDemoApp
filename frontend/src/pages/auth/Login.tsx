@@ -1,25 +1,66 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import type { TipoUsuario } from '@/types';
+import { toast } from 'sonner';
 import { Card, CardConteudo, CardHeader, CardTitulo, CardDescricao } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Briefcase, Building2, UserCircle } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
+
+interface RespostaLoginAPI {
+  token: string;
+  user: {
+    id: number;
+    email: string;
+    tipo: 'EMPRESA' | 'CANDIDATO';
+    candidato_perfil: {
+      salario_expectativa: string;
+      experiencia: string;
+      nivel_educacao: number;
+    } | null;
+  };
+}
 
 interface PaginaLoginPropriedades {
-  onLogin: (perfil: TipoUsuario) => void;
+  onLogin: (dados: RespostaLoginAPI) => void;
 }
 
 export default function LoginPage({ onLogin }: PaginaLoginPropriedades) {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [carregando, setCarregando] = useState(false);
 
-  const handleLoginRapido = (perfil: TipoUsuario) => {
-    onLogin(perfil);
-    navigate('/');
-  };
+  const enviarLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      setCarregando(true);
+      const resposta = await fetch('/api/contas/login/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha })
+      });
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        const mensagem = 
+          dados?.detail ||
+          dados?.non_field_errors?.[0] ||
+          'Não foi possivel fazer login.';
+          throw new Error(mensagem);
+      }
+      onLogin(dados);
+      toast.success('Login realizado com sucesso.');
+      navigate('/');
+    } catch (error) {
+      const mensagem = error instanceof Error ? error.message : 'Erro inesperado ao fazer login.';
+      toast.error(mensagem);
+    } finally {
+      setCarregando(false);
+    }
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-65px)] items-center justify-center px-4">
@@ -31,40 +72,30 @@ export default function LoginPage({ onLogin }: PaginaLoginPropriedades) {
           <CardTitulo className="text-2xl">Bem-vindo de volta</CardTitulo>
           <CardDescricao>Acesse sua conta na plataforma</CardDescricao>
         </CardHeader>
+
         <CardConteudo className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input id="password" type="password" placeholder="••••••••" value={senha} onChange={e => setSenha(e.target.value)} />
-            </div>
-            <Button className="w-full" disabled>Entrar</Button>
-          </div>
+            <form onSubmit={enviarLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">E-mail</Label>
+                <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Senha</Label>
+                <Input id="password" type="password" placeholder="••••••••" value={senha} onChange={e => setSenha(e.target.value)} required />
+              </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
-            <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">Acesso rápido</span></div>
-          </div>
+              <Button type="submit" className="w-full" disabled={carregando}>
+                {carregando ? 'Entrando...' : 'Entrar'}
+              </Button>
+            </form>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => handleLoginRapido('empresa')}>
-              <Building2 className="h-6 w-6 text-primary" />
-              <span className="text-xs font-medium">Entrar como Empresa</span>
-            </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => handleLoginRapido('candidato')}>
-              <UserCircle className="h-6 w-6 text-primary" />
-              <span className="text-xs font-medium">Entrar como Candidato</span>
-            </Button>
-          </div>
-
-          <p className="text-center text-sm text-muted-foreground">
-            Não tem conta?{' '}
-            <Link to="/registro" className="font-medium text-primary hover:underline">Cadastre-se</Link>
-          </p>
-        </CardConteudo>
+            <p className="text-center text-sm text-muted-foreground">
+              Não tem conta?{' '}
+              <Link to="/registro" className="font-medium text-primary hover:underline">
+                Cadastre-se
+              </Link>
+            </p>
+          </CardConteudo>
       </Card>
     </div>
   );
