@@ -1,18 +1,20 @@
 from django.urls import path
 from apps.trabalhos.views import (
-    TrabalhoListCreateView,
-    TrabalhoDetailView,
     AplicacaoCreateView,
-    MinhasAplicacoesView,
     CandidatosDoTrabalhoView,
+    MinhasAplicacoesView,
+    MinhaVagaDetailView,
+    MinhaVagaListView,
     RelatorioTrabalhosView,
+    TrabalhoListCreateView,
 )
 
 urlpatterns = [
     path("", TrabalhoListCreateView.as_view(), name="trabalhos-list-create"),
-    path("<int:pk>/", TrabalhoDetailView.as_view(), name="trabalhos-detalhes"),
-    path("aplicacoes/", MinhasAplicacoesView.as_view(), name="aplicacoes-minhas"),
-    path("aplicacoes/criar/", AplicacaoCreateView.as_view(), name="aplicacoes-criar"),
-    path("<int:trabalho_id>/candidatos/", CandidatosDoTrabalhoView.as_view(), name="trabalhos-candidatos"),
+    path("minhas-vagas/", MinhaVagaListView.as_view(), name="trabalhos-minhas-vagas"),
+    path("minhas-vagas/<int:pk>/", MinhaVagaDetailView.as_view(), name="trabalhos-minha-vaga-detail"),
+    path("minhas-vagas/<int:trabalho_id>/candidatos/", CandidatosDoTrabalhoView.as_view(), name="trabalhos-candidatos",),
+    path("aplicacoes/", AplicacaoCreateView.as_view(), name="aplicacoes-criar"),
+    path("aplicacoes/minhas/", MinhasAplicacoesView.as_view(), name="aplicacoes-minhas"),
     path("relatorios/", RelatorioTrabalhosView.as_view(), name="trabalhos-relatorios"),
 ]

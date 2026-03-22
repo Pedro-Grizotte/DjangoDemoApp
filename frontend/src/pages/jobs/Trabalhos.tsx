@@ -1,12 +1,10 @@
-import { useState, useMemo } from 'react';
-import type { Usuario } from '@/types';
-import { TrabalhosMock, rangeDeSalarios, niveisDeEducacao } from '@/mocks/empregos';
+import { useState, useMemo, useEffect } from 'react';
+import type { Trabalho, Usuario } from '@/types';
 import ConteudoPagina from '@/components/layout/ConteudoPagina';
 import TrabalhoCard from '@/components/jobs/TrabalhoCard';
 import EstadoVazio from '@/components/ui/EstadoVazio';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Search, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -14,21 +12,107 @@ interface TrabalhosPropriedades {
   user: Usuario | null;
 }
 
+interface TrabalhoAPI {
+  id: number;
+  nome: string;
+  range_salario: 'UP_TO_1000' | 'FROM_1000_TO_2000' | 'FROM_2000_TO_3000' | 'ABOVE_3000';
+  requisitos: string;
+  educacao_minima: 1 | 2 | 3 | 4 | 5 | 6;
+  empresa: number;
+  contagem_candidatos: number;
+  criado_em: string;
+  atualizado_em: string;
+}
+
+const rangeDeSalarios = [
+  { valor: 'all', label: 'Todas as faixas' },
+  { valor: 'UP_TO_1000', label: 'Até 1.000' },
+  { valor: 'FROM_1000_TO_2000', label: 'De 1.000 a 2.000' },
+  { valor: 'FROM_2000_TO_3000', label: 'De 2.000 a 3.000' },
+  { valor: 'ABOVE_3000', label: 'Acima de 3.000' },
+];
+
+const niveisDeEducacao = [
+  { valor: 'all', label: 'Escolaridade' },
+  { valor: '1', label: 'Ensino fundamental' },
+  { valor: '2', label: 'Ensino medio' },
+  { valor: '3', label: 'Tecnologo' },
+  { valor: '4', label: 'Ensino Superior' },
+  { valor: '5', label: 'Pos / MBA / Mestrado' },
+  { valor: '6', label: 'Doutorado' },
+];
+
+const RANGE_SALARIO_LABEL: Record<TrabalhoAPI['range_salario'], string> = {
+  UP_TO_1000: 'Até 1.000',
+  FROM_1000_TO_2000: 'De 1.000 a 2.000',
+  FROM_2000_TO_3000: 'De 2.000 a 3.000',
+  ABOVE_3000: 'Acima de 3.000',
+};
+
+const EDUCACAO_LABEL: Record<TrabalhoAPI['educacao_minima'], string> = {
+  1: 'Ensino fundamental',
+  2: 'Ensino medio',
+  3: 'Tecnologo',
+  4: 'Ensino Superior',
+  5: 'Pos / MBA / Mestrado',
+  6: 'Doutorado',
+};
+
+function mapearTrabalhoDaAPI(emprego: TrabalhoAPI): Trabalho {
+  return {
+    id: emprego.id,
+    titulo: emprego.nome,
+    salario_range: emprego.range_salario,
+    salario_range_label: RANGE_SALARIO_LABEL[emprego.range_salario],
+    requisitos: emprego.requisitos,
+    educacao_minima: String(emprego.educacao_minima),
+    educacao_minima_label: EDUCACAO_LABEL[emprego.educacao_minima],
+    criado_em: emprego.criado_em,
+    contagem_candidatos: emprego.contagem_candidatos,
+    criado_por: emprego.empresa,
+  };
+}
+
 export default function Trabalhos({ user }: TrabalhosPropriedades) {
+  const [trabalhos, setTrabalhos] = useState<Trabalho[]>([]);
+  const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState('');
   const [filtroSalario, setFiltroSalario] = useState('all');
   const [filtroEducacao, setFiltroEducacao] = useState('all');
   const [aplicacaoId, setAplicacaoId] = useState<number[]>([]);
 
+  useEffect(() => {
+    const carregarTrabalhos = async () => {
+      try {
+        setCarregando(true);
+        const resposta = await fetch('/api/trabalhos/');
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+          const mensagem = dados?.detail || 'Não foi possivel carregar a lista de vagas.';
+          throw new Error(mensagem);
+        }
+        setTrabalhos(dados.map(mapearTrabalhoDaAPI));
+      } catch (error) {
+        const mensagem = error instanceof Error ? error.message : 'Erro inesperado ao buscar vagas.';
+        toast.error(mensagem);
+      } finally {
+        setCarregando(false);
+      }
+    };
+
+    carregarTrabalhos();
+  }, []);
+
   const filtros = useMemo(() => {
-    return TrabalhosMock.filter(emprego => {
-      const matchBusca = emprego.titulo.toLowerCase().includes(busca.toLowerCase())
-       || emprego.requisitos.toLowerCase().includes(busca.toLowerCase());
+    return trabalhos.filter(emprego => {
+      const matchBusca = emprego.titulo.toLowerCase().includes(busca.toLowerCase()) || emprego.requisitos.toLowerCase().includes(busca.toLowerCase());
       const matchSalario = filtroSalario === 'all' || emprego.salario_range === filtroSalario;
       const matchEducacao = filtroEducacao === 'all' || emprego.educacao_minima === filtroEducacao;
+
       return matchBusca && matchSalario && matchEducacao;
     });
-  }, [busca, filtroSalario, filtroEducacao]);
+  }, [trabalhos, busca, filtroSalario, filtroEducacao]);
 
   const enviarApply = (trabalhoId: number) => {
     if (aplicacaoId.includes(trabalhoId)) return;
@@ -43,11 +127,6 @@ export default function Trabalhos({ user }: TrabalhosPropriedades) {
           <h1 className="text-2xl font-bold sm:text-3xl">Vagas Disponíveis</h1>
           <p className="text-muted-foreground">Encontre a oportunidade ideal para você</p>
         </div>
-        {user && (
-          <Badge variant={user.tipo === 'empresa' ? 'default' : 'secondary'} className="w-fit">
-            {user.tipo === 'empresa' ? 'Empresa' : 'Candidato'}
-          </Badge>
-        )}
       </div>
 
       {/* Filtros de Busca */}
@@ -59,7 +138,6 @@ export default function Trabalhos({ user }: TrabalhosPropriedades) {
         <Select value={filtroSalario} onValueChange={setFiltroSalario}>
           <SelectTrigger><SelectValue placeholder="Faixa salarial" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas as faixas</SelectItem>
             {rangeDeSalarios.map(r => (
               <SelectItem key={r.valor} value={r.valor}>{r.label}</SelectItem>
             ))}
@@ -68,7 +146,6 @@ export default function Trabalhos({ user }: TrabalhosPropriedades) {
         <Select value={filtroEducacao} onValueChange={setFiltroEducacao}>
           <SelectTrigger><SelectValue placeholder="Escolaridade" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Escolaridade</SelectItem>
             {niveisDeEducacao.map(e => (
               <SelectItem key={e.valor} value={e.valor}>{e.label}</SelectItem>
             ))}
@@ -76,18 +153,14 @@ export default function Trabalhos({ user }: TrabalhosPropriedades) {
         </Select>
       </div>
 
-      {filtros.length === 0 ? (
+      {carregando ? (
+        <p className="text-sm text-muted-foreground">Carregando vagas...</p>
+      ) : filtros.length === 0 ? (
         <EstadoVazio icone={Briefcase} titulo="Nenhuma vaga encontrada" descricao="Tente ajustar os filtros de busca." />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtros.map(job => (
-            <TrabalhoCard
-              key={job.id}
-              emprego={job}
-              mostrarAplicado={user?.tipo === 'candidato'}
-              onAplicacao={enviarApply}
-              IdAplicacao={aplicacaoId}
-            />
+            <TrabalhoCard key={job.id} emprego={job} mostrarAplicado={user?.tipo === 'candidato'} onAplicacao={enviarApply} IdAplicacao={aplicacaoId} />
           ))}
         </div>
       )}
