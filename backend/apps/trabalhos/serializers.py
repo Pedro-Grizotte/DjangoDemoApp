@@ -16,6 +16,7 @@ class TrabalhoSerializer(serializers.ModelSerializer):
             "requisitos",
             "educacao_minima",
             "empresa",
+            "empresa_email",
             "contagem_candidatos",
             "criado_em",
             "atualizado_em",
