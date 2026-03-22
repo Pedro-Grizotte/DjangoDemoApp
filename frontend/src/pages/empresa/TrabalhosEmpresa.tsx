@@ -93,7 +93,7 @@ export default function TrabalhosEmpresa() {
     if (deleteId === null) return;
 
     const token = localStorage.getItem(AUTH_TOKEN_CHAVE);
-    if (!token) {
+    if (!token || token === 'null' || token === 'undefined') {
       toast.error('Voce precisa estar autenticado como empresa.');
       return;
     }
