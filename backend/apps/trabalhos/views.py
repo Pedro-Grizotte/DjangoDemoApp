@@ -1,4 +1,5 @@
 from django.db.models import Count
+from django.db.models.functions import TruncMonth
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions
 from rest_framework.response import Response
@@ -88,8 +89,48 @@ class CandidatosDoTrabalhoView(generics.ListAPIView):
         ).select_related("trabalho", "candidato")
     
 class RelatorioTrabalhosView(APIView):
-      permission_classes = [permissions.IsAuthenticated, IsEmpresa]
+    permission_classes = [permissions.IsAuthenticated, IsEmpresa]
 
-      def get(self, request, *args, **kwargs):
-          # Aqui voce implementa agregacoes e indicadores depois.
-          return Response({"detail": "Implementar relatorios."}, status=501)
+    def get(self, request, *args, **kwargs):
+        trabalhos = Trabalho.objects.filter(empresa=request.user)
+        aplicacoes = Aplicacao.objects.filter(trabalho__empresa=request.user)
+
+        trabalhos_por_mes = trabalhos.annotate(mes=TruncMonth("criado_em")).values("mes").annotate(contagem=Count("id")).order_by("mes")
+        aplicacoes_por_mes = aplicacoes.annotate(mes=TruncMonth("criado_em")).values("mes").annotate(contagem=Count("id")).order_by("mes")
+        meses = {
+            1: "Jan",
+            2: "Fev",
+            3: "Mar",
+            4: "Abr",
+            5: "Mai",
+            6: "Jun",
+            7: "Jul",
+            8: "Ago",
+            9: "Set",
+            10: "Out",
+            11: "Nov",
+            12: "Dez",
+        }
+
+        return Response(
+            {
+                "total_vagas": trabalhos.count(),
+                "total_candidaturas": aplicacoes.count(),
+                "vagas_por_mes": [
+                    {
+                        "mes": meses[item["mes"].month],
+                        "contagem": item["contagem"],
+                    }
+                    for item in trabalhos_por_mes
+                    if item["mes"] is not None
+                ],
+                "candidaturas_por_mes": [
+                    {
+                        "mes": meses[item["mes"].month],
+                        "contagem": item["contagem"],
+                    }
+                    for item in aplicacoes_por_mes
+                    if item["mes"] is not None
+                ],
+            }
+        )
