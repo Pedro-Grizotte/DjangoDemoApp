@@ -5,8 +5,11 @@ import ConteudoPagina from '@/components/layout/ConteudoPagina';
 import { Card, CardConteudo, CardHeader, CardTitulo } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { enviarCandidatura } from '@/lib/candidaturas';
 import { ArrowLeft, DollarSign, GraduationCap, Users, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
+
+const AUTH_TOKEN_CHAVE = 'auth_token';
 
 interface TrabalhoDetalhesPaginaPropriedades {
   user: Usuario | null;
@@ -22,6 +25,15 @@ interface TrabalhoAPI {
   contagem_candidatos: number;
   criado_em: string;
   atualizado_em: string;
+}
+
+interface AplicacaoAPI {
+  id: number;
+  trabalho: number;
+  nome_trabalho: string;
+  candidato: number;
+  score: number;
+  criado_em: string;
 }
 
 const RANGE_SALARIO_LABEL: Record<TrabalhoAPI['range_salario'], string> = {
@@ -61,18 +73,48 @@ export default function CardTrabalhoDetalhes({ user }: TrabalhoDetalhesPaginaPro
   const [aplicado, setAplicado] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [emprego, setEmprego] = useState<Trabalho | null>(null);
+  const [enviandoAplicacao, setEnviandoAplicacao] = useState(false);
 
   useEffect(() => {
-    const carregartrabalho = async () => {
+    const carregarDados = async () => {
       try {
         setCarregando(true);
-        const resposta = await fetch(`/api/trabalhos/${id}/`);
-        const dados = await resposta.json();
+        const respostaTrabalho = await fetch(`/api/trabalhos/${id}/`);
+        const dadosTrabalho = await respostaTrabalho.json();
 
-        if (!resposta.ok) {
-          throw new Error(dados?.detail || 'Nao foi possivel carregar a vaga.');
+        if (!respostaTrabalho.ok) {
+          throw new Error(dadosTrabalho?.detail || 'Nao foi possivel carregar a vaga.');
         }
-        setEmprego(mapearTrabalhoDaAPI(dados));
+
+        const trabalhoMapeado = mapearTrabalhoDaAPI(dadosTrabalho);
+        setEmprego(trabalhoMapeado);
+
+        if (user?.tipo !== 'candidato') {
+          setAplicado(false);
+          return;
+        }
+
+        const token = localStorage.getItem(AUTH_TOKEN_CHAVE);
+        if (!token) {
+          setAplicado(false);
+          return;
+        }
+
+        const respostaAplicacoes = await fetch('/api/trabalhos/aplicacoes/minhas/', {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+        const dadosAplicacoes = await respostaAplicacoes.json();
+
+        if (!respostaAplicacoes.ok) {
+          throw new Error(dadosAplicacoes?.detail || 'Nao foi possivel carregar suas candidaturas.');
+        }
+
+        const jaAplicou = dadosAplicacoes.some(
+          (aplicacao: AplicacaoAPI) => aplicacao.trabalho === trabalhoMapeado.id
+        );
+        setAplicado(jaAplicou);
       } catch (error) {
         const mensagem = error instanceof Error ? error.message : 'Erro inesperado ao carregar a vaga.';
         toast.error(mensagem);
@@ -82,13 +124,26 @@ export default function CardTrabalhoDetalhes({ user }: TrabalhoDetalhesPaginaPro
     };
 
     if (id) {
-      carregartrabalho();
+      carregarDados();
     }
-  }, [id]);
+  }, [id, user]);
 
-  const handleApply = () => {
-    setAplicado(true);
-    toast.success('Candidatura enviada com sucesso!');
+  const handleApply = async () => {
+    if (!emprego || aplicado || enviandoAplicacao) {
+      return;
+    }
+
+    try {
+      setEnviandoAplicacao(true);
+      await enviarCandidatura(emprego.id);
+      setAplicado(true);
+      toast.success('Candidatura enviada com sucesso!');
+    } catch (error) {
+      const mensagem = error instanceof Error ? error.message : 'Erro inesperado ao enviar candidatura.';
+      toast.error(mensagem);
+    } finally {
+      setEnviandoAplicacao(false);
+    }
   };
 
   if (carregando) {
@@ -140,8 +195,8 @@ export default function CardTrabalhoDetalhes({ user }: TrabalhoDetalhesPaginaPro
           </div>
 
           {user?.tipo === 'candidato' && (
-            <Button className="w-full" disabled={aplicado} onClick={handleApply}>
-              {aplicado ? 'Candidatura Enviada ✓' : 'Candidatar-se'}
+            <Button className="w-full" disabled={aplicado || enviandoAplicacao} onClick={handleApply}>
+              {aplicado ? 'Candidatura Enviada ✓' : enviandoAplicacao ? 'Enviando...' : 'Candidatar-se'}
             </Button>
           )}
         </CardConteudo>

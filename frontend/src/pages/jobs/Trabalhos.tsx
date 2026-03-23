@@ -5,11 +5,23 @@ import TrabalhoCard from '@/components/jobs/TrabalhoCard';
 import EstadoVazio from '@/components/ui/EstadoVazio';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { enviarCandidatura } from '@/lib/candidaturas';
 import { Search, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 
+const AUTH_TOKEN_CHAVE = 'auth_token';
+
 interface TrabalhosPropriedades {
   user: Usuario | null;
+}
+
+interface AplicacaoAPI {
+  id: number;
+  trabalho: number;
+  nome_trabalho: string;
+  candidato: number;
+  score: number;
+  criado_em: string;
 }
 
 interface TrabalhoAPI {
@@ -80,6 +92,41 @@ export default function Trabalhos({ user }: TrabalhosPropriedades) {
   const [filtroSalario, setFiltroSalario] = useState('all');
   const [filtroEducacao, setFiltroEducacao] = useState('all');
   const [aplicacaoId, setAplicacaoId] = useState<number[]>([]);
+  const [aplicandoIds, setAplicandoIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    const carregarMinhasAplicacoes = async () => {
+      if (user?.tipo !== 'candidato') {
+        setAplicacaoId([]);
+        return;
+      }
+
+      const token = localStorage.getItem(AUTH_TOKEN_CHAVE);
+      if (!token) {
+        setAplicacaoId([]);
+        return;
+      }
+
+      try {
+        const resposta = await fetch(`/api/trabalhos/aplicacoes/minhas/`, {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+
+        const dados = await resposta.json();
+        if (!resposta.ok) {
+          throw new Error(dados?.detail || 'Nao foi possivel carregar suas candidaturas.');
+        }
+        setAplicacaoId(dados.map((aplicacao: AplicacaoAPI) => aplicacao.trabalho));
+      } catch (error) {
+        const mensagem = error instanceof Error ? error.message : 'Erro inesperado ao carregar suas candidaturas.';
+        toast.error(mensagem);
+      }
+    };
+
+    carregarMinhasAplicacoes();
+  }, [user]);
 
   useEffect(() => {
     const carregarTrabalhos = async () => {
@@ -114,10 +161,32 @@ export default function Trabalhos({ user }: TrabalhosPropriedades) {
     });
   }, [trabalhos, busca, filtroSalario, filtroEducacao]);
 
-  const enviarApply = (trabalhoId: number) => {
-    if (aplicacaoId.includes(trabalhoId)) return;
-    setAplicacaoId(prev => [...prev, trabalhoId]);
-    toast.success('Candidatura enviada com sucesso!');
+  const enviarApply = async (trabalhoId: number) => {
+    if (aplicacaoId.includes(trabalhoId) || aplicandoIds.includes(trabalhoId)) {
+      return;
+    }
+    if (user?.tipo !== 'candidato') {
+      toast.error('Apenas candidatos podem se candidatar.');
+      return;
+    }
+
+    const token = localStorage.getItem(AUTH_TOKEN_CHAVE);
+    if (!token) {
+      toast.error('Faça login para se candidatar.');
+      return;
+    }
+
+    try {
+      setAplicandoIds(prev => [...prev, trabalhoId]);
+      await enviarCandidatura(trabalhoId);
+      setAplicacaoId(prev => [...prev, trabalhoId]);
+      toast.success('Candidatura enviada com sucesso!');
+    } catch (error) {
+      const mensagem = error instanceof Error ? error.message : 'Erro inesperado ao enviar candidatura.';
+      toast.error(mensagem);
+    } finally {
+      setAplicandoIds(prev => prev.filter(id => id !== trabalhoId));
+    }
   };
 
   return (
@@ -160,7 +229,7 @@ export default function Trabalhos({ user }: TrabalhosPropriedades) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtros.map(job => (
-            <TrabalhoCard key={job.id} emprego={job} mostrarAplicado={user?.tipo === 'candidato'} onAplicacao={enviarApply} IdAplicacao={aplicacaoId} />
+            <TrabalhoCard key={job.id} emprego={job} mostrarAplicado={user?.tipo === 'candidato'} onAplicacao={enviarApply} IdAplicacao={aplicacaoId} aplicando={aplicandoIds.includes(job.id)} />
           ))}
         </div>
       )}
