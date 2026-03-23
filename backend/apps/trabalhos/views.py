@@ -63,8 +63,10 @@ class RelatorioTrabalhosView(APIView):
     
 class TrabalhoDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = TrabalhoSerializer
-    queryset = Trabalho.objects.annotate(contagem_candidatos=Count("aplicacoes"))
-    permission_classes = [permissions.IsAuthenticated, IsDonoEmpresaDoTrabalho]
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        return Trabalho.objects.select_related("empresa").annotate(contagem_candidatos=Count("aplicacoes"))
 
 class AplicacaoCreateView(generics.CreateAPIView):
     serializer_class = AplicacaoSerializer
