@@ -33,6 +33,29 @@ class Trabalho(models.Model):
             raise ValidationError({"nome": "O nome da vaga é obrigatório."})
         if not self.requisitos or not self.requisitos.strip():
             raise ValidationError({"requisitos": "Os requisitos são obrigatórios."})
+        
+    def recalcular_scores_aplicacoes(self):
+        for aplicacao in self.aplicacoes.select_related("candidato", "candidato__candidato_perfil"):
+            novo_score = aplicacao.calcular_score()
+            if aplicacao.score != novo_score:
+                aplicacao.score = novo_score
+                aplicacao.save(update_fields=["score"])
+
+    def save(self, *args, **kwargs):
+        range_salario_anterior = None
+        educacao_minima_anterior = None
+
+        if self.pk:
+            anterior = Trabalho.objects.filter(pk=self.pk).only("range_salario", "educacao_minima").first()
+            if anterior:
+                range_salario_anterior = anterior.range_salario
+                educacao_minima_anterior = anterior.educacao_minima
+
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+        if ( self.pk and ( range_salario_anterior != self.range_salario or educacao_minima_anterior != self.educacao_minima )):
+            self.recalcular_scores_aplicacoes()
 
 class Aplicacao(models.Model):
     candidato = models.ForeignKey(

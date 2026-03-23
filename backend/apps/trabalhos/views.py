@@ -84,11 +84,10 @@ class CandidatosDoTrabalhoView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, IsEmpresa]
 
     def get_queryset(self):
-        trabalho_id = self.kwargs["trabalho_id"]
-        return Aplicacao.objects.filter(
-            trabalho_id=trabalho_id,
-            trabalho__empresa=self.request.user,
-        ).select_related("trabalho", "candidato")
+        trabalho = get_object_or_404(
+            Trabalho.objects.filter(empresa=self.request.user), pk=self.kwargs["trabalho_id"],
+        )
+        return Aplicacao.objects.filter(trabalho=trabalho).select_related("trabalho", "candidato", "candidato__candidato_perfil").order_by("-score", "-criado_em")
     
 class RelatorioTrabalhosView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsEmpresa]
