@@ -1,4 +1,5 @@
 import pytest
+from rest_framework import serializers
 from rest_framework.test import APIRequestFactory
 
 from apps.contas.models import NivelEducacao, TipoUsuario
@@ -36,7 +37,7 @@ def test_trabalho_serializer_impede_candidato_de_criar_vaga(candidato_com_perfil
         context={"request": request}
     )
     assert serializer.is_valid(), serializer.errors
-    with pytest.raises(Exception):
+    with pytest.raises(serializers.ValidationError):
         serializer.save()
 
 @pytest.mark.django_db

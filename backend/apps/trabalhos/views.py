@@ -47,7 +47,7 @@ class MinhasAplicacoesView(generics.ListAPIView):
     def get_queryset(self):
         return Aplicacao.objects.filter(candidato=self.request.user).select_related("trabalho", "candidato", "trabalho__empresa").order_by("-criado_em")
     
-class TrabalhoDetailView(generics.RetrieveUpdateAPIView):
+class TrabalhoDetailView(generics.RetrieveAPIView):
     serializer_class = TrabalhoSerializer
     permission_classes = [permissions.AllowAny]
 
