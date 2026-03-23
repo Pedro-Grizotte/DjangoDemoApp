@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { Usuario } from '@/types';
 import { Briefcase, LogOut, BarChart3, Home, Building2, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,8 +11,14 @@ interface NavbarPropriedades {
 
 export default function Navbar({ usuario, onLogout }: NavbarPropriedades) {
   const local = useLocation();
+  const navigate = useNavigate();
 
   const estaAtivo = (caminho: string) => local.pathname === caminho;
+
+  const handleLogout = () => {
+    onLogout();
+    navigate('/', { replace: true });
+  }
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
@@ -59,7 +65,7 @@ export default function Navbar({ usuario, onLogout }: NavbarPropriedades) {
               <Badge variant={usuario.tipo === 'empresa' ? 'default' : 'secondary'} className="text-xs">
                 {usuario.tipo === 'empresa' ? 'Empresa' : 'Candidato'}
               </Badge>
-              <Button variant="ghost" size="sm" onClick={onLogout} title="Sair">
+              <Button variant="ghost" size="sm" onClick={handleLogout} title="Sair">
                 <LogOut className="h-4 w-4" />
               </Button>
             </>
