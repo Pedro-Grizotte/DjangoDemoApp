@@ -34,11 +34,15 @@ export default function PaginaRegistro() {
       toast.error('Selecione o tipo de conta.');
       return;
     }
+    if (tipo === 'candidato' && !nivelEducacao) {
+      toast.error('Selecione a escolaridade.');
+      return;
+    }
 
     const payload: Record<string, unknown> = {
       email,
       senha,
-      tipo: tipo === 'empresa' ? 'EMPRESA' : 'CADIDATO',
+      tipo: tipo === 'empresa' ? 'EMPRESA' : 'CANDIDATO',
     };
 
     if (tipo === 'candidato') {
@@ -64,7 +68,11 @@ export default function PaginaRegistro() {
           dados?.detail ||
           dados?.email?.[0] ||
           dados?.senha?.[0] ||
+          dados?.tipo?.[0] ||
           dados?.candidato_perfil?.[0] ||
+          dados?.candidato_perfil?.nivel_educacao?.[0] ||
+          dados?.candidato_perfil?.salario_expectativa?.[0] ||
+          dados?.candidato_perfil?.experiencia?.[0] ||
           'Nao foi possivel concluir o cadastro.';
         throw new Error(mensagem)
       }
@@ -133,7 +141,7 @@ export default function PaginaRegistro() {
                 </div>
                 <div className="space-y-2">
                   <Label>Escolaridade</Label>
-                  <Select>
+                  <Select value={nivelEducacao} onValueChange={setNivelEducacao}>
                     <SelectTrigger><SelectValue placeholder="Nível de escolaridade" /></SelectTrigger>
                     <SelectContent>
                       {niveisDeEducacao.map(educacao => (
