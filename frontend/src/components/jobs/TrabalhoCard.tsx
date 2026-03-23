@@ -10,9 +10,10 @@ interface TrabalhoCardPropriedades {
   mostrarAplicado?: boolean;
   onAplicacao?: (jobId: number) => void;
   IdAplicacao?: number[];
+  aplicando?: boolean;
 }
 
-export default function JobCard({ emprego, mostrarAplicado, onAplicacao, IdAplicacao = [] }: TrabalhoCardPropriedades) {
+export default function JobCard({ emprego, mostrarAplicado, onAplicacao, IdAplicacao = [], aplicando = false }: TrabalhoCardPropriedades) {
   const estaAplicado = IdAplicacao.includes(emprego.id);
 
   return (
@@ -44,7 +45,7 @@ export default function JobCard({ emprego, mostrarAplicado, onAplicacao, IdAplic
           </Button>
         </Link>
         {mostrarAplicado && (
-          <Button size="sm" disabled={estaAplicado} onClick={() => onAplicacao?.(emprego.id)} className="flex-1">
+          <Button size="sm" disabled={estaAplicado || aplicando} onClick={() => onAplicacao?.(emprego.id)} className="flex-1">
             {estaAplicado ? 'Candidatado' : 'Candidatar-se'}
           </Button>
         )}
