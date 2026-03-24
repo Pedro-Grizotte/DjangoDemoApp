@@ -104,6 +104,22 @@ node -v | minha versão: v24.1.0.
 npm -v | minha versão: v11.3.0 
 ```
 
+No Windows: 
+
+```bash
+# Download e intale o Chocolatey:
+powershell -c "irm https://community.chocolatey.org/install.ps1|iex"
+
+# Download e instale Node.js: 
+choco install nodejs --version="21.1.0"
+
+# Verificar a versão do Node.js: 
+node -v | minha versão: v24.1.0.
+
+# Verificar a versão do npm:
+npm -v | minha versão: v11.3.0 
+```
+
 Abra outro terminal, ative novamente o ambiente virtual: 
 
 No Mac/Linux:
