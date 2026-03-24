@@ -34,10 +34,25 @@ cd DjangoDemoApp
 
 ### 2. Criar e ativar a virtualenv do backend
 
+Antes verifique sua versão do Python, pois esse projeto usa Python 3.12+
+
+```bash
+# Verifique sua versão:
+python --version
+
+# Caso não tenha o python instalado, ou tenha uma versão inferior, instale o python
+
+# Mac/Linux: 
+brew install python@3.12
+
+# Windows
+choco install python312
+```
+
 No Mac/Linux:
 
 ```bash
-python3 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 ```
 
