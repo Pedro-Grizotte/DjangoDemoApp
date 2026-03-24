@@ -86,7 +86,39 @@ Principais rotas da API:
 
 ## Frontend
 
-Abra outro terminal, volte para a raiz do projeto e rode:
+Instale o Node.js: 
+
+No Mac/Linux: 
+
+```bash
+# Download o Homebrew:
+curl -o- https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash
+
+# Download e instale Node.js: 
+brew install node@24
+
+# Verificar a versão do Node.js: 
+node -v | minha versão: v24.1.0.
+
+# Verificar a versão do npm:
+npm -v | minha versão: v11.3.0 
+```
+
+Abra outro terminal, ative novamente o ambiente virtual: 
+
+No Mac/Linux:
+
+```bash
+source .venv/bin/activate
+```
+
+No Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+Volta para a raiz do projeto e rode:
 
 ```bash
 cd frontend
